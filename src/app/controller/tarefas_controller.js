@@ -1,5 +1,5 @@
 const Tarefas = require("../model/tarefa_model");
-const momentjs = require("moment");
+
 class TarefasController {
 
     async insert(req, res) {
@@ -8,7 +8,7 @@ class TarefasController {
         if (username) {
             try {
                 const data = await Tarefas.create(tarefa);
-                return res.json({ response: "Operation Success!" })
+                return res.json({ response: "Operation Success! ", data})
             } catch (error) {
                 return res.json({ error: error })
             }
@@ -29,7 +29,9 @@ class TarefasController {
     async selectOne(req, res) {
         try {
             const data = await Tarefas.findOne({ _id: req.params.id })
-            if (!data) return res.json({ error: "Tarefa not found" })
+            if (!data) {
+                return res.json({ error: "Tarefa not found" })
+            }
             return res.json(data)
         } catch (error) {
             return res.json({ error: error })
@@ -73,15 +75,19 @@ class TarefasController {
             if (!data) {
                 return res.json({ error: "Tarefa id not found" })
             }
-            if(data.end_time_flag == 'true'){
+            if (data.end_time_flag == 'true') {
                 const total = new Date(data.updatedAt).getTime() - new Date(data.createdAt).getTime();
-                const elapsed = momentjs(total).format('hh:mm:ss')
+                const hours = new Date(total).getUTCHours().toString().padStart(2, '0')
+                const minutes = new Date(total).getUTCMinutes().toString().padStart(2, '0')
+                const seconds = new Date(total).getUTCSeconds().toString().padStart(2, '0')
+                const elapsed = hours+":"+minutes+":"+seconds
+                
                 console.log(elapsed)
-                return res.json({response : elapsed})
-            }else{
-                return res.json({response: "Tarefa is running"})
+                return res.json({ response: elapsed })
+            } else {
+                return res.json({ response: "Tarefa is running" })
             }
-            
+
         } catch (error) {
             return res.status(500).json({ error: error })
         }
