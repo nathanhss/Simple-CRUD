@@ -1,4 +1,5 @@
 const Tarefas = require("../model/tarefa_model");
+const mytimer = require("../utils/elapsedTime_utils")
 
 class TarefasController {
 
@@ -8,7 +9,7 @@ class TarefasController {
         if (username) {
             try {
                 const data = await Tarefas.create(tarefa);
-                return res.json({ response: "Operation Success! ", data})
+                return res.json({ response: "Operation Success! ", data })
             } catch (error) {
                 return res.json({ error: error })
             }
@@ -41,13 +42,20 @@ class TarefasController {
     async updateTarefa(req, res) {
         const id = req.params.id
         const { username, description, end_time_flag } = req.body
-        const tarefa = { username, description, end_time_flag };
         try {
-            const data = await Tarefas.updateOne({ _id: id }, tarefa)
-
-            if (data.matchedCount === 0) {
+            const flag = await Tarefas.updateOne({ _id: id }, { $set: { end_time_flag: end_time_flag } })
+            if (flag.matchedCount === 0) {
                 return res.json({ error: "Tarefa id not found to update" })
             }
+            let tarefa;
+            if (end_time_flag == true) {
+                const elapsedTime = await mytimer.elapsedTarefa(id)
+                tarefa = { username, description, end_time_flag, elapsedTime }
+            } else {
+                tarefa = { username, description, end_time_flag }
+            }
+
+            const data = await Tarefas.updateOne({ _id: id }, tarefa)
 
             return res.json(data)
         } catch (error) {
@@ -75,25 +83,13 @@ class TarefasController {
             if (!data) {
                 return res.json({ error: "Tarefa id not found" })
             }
-            if (data.end_time_flag == 'true') {
-                const total = new Date(data.updatedAt).getTime() - new Date(data.createdAt).getTime();
-                const hours = new Date(total).getUTCHours().toString().padStart(2, '0')
-                const minutes = new Date(total).getUTCMinutes().toString().padStart(2, '0')
-                const seconds = new Date(total).getUTCSeconds().toString().padStart(2, '0')
-                const elapsed = hours+":"+minutes+":"+seconds
-                
-                console.log(elapsed)
-                return res.json({ response: elapsed })
-            } else {
-                return res.json({ response: "Tarefa is running" })
-            }
+
+            return res.json({ elapsedTime: data.elapsedTime })
 
         } catch (error) {
-            return res.status(500).json({ error: error })
+            return res.json({ error: error })
         }
     }
-
-
 }
 
 module.exports = new TarefasController();

@@ -10,8 +10,12 @@ const tarefaSchema = new mongoose.Schema(
             type: String
         },
         end_time_flag: {
+            type: Boolean,
+            default: false
+        },
+        elapsedTime:{
             type: String,
-            default: "false"
+            default: "00:00:00"
         }
     },
     {
@@ -19,4 +23,4 @@ const tarefaSchema = new mongoose.Schema(
     }
 )
 
-module.exports = mongoose.model("Tarefas", tarefaSchema);
+module.exports = mongoose.model("tarefas", tarefaSchema);

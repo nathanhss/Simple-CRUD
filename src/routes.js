@@ -17,7 +17,4 @@ routes.patch("/tarefas/:id", TarefasController.updateTarefa)
 //delete requests
 routes.delete("/tarefas/remove/:id", TarefasController.removeTarefa)
 
-
-//TODO: calculate the tarefa time
-
 module.exports = routes;
